@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kharcha"
+version = "0.1.0"
+description = "Self-hosted AI spend tracking. SQLite, budgets with burn-rate projection, waste detection. Zero dependencies."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Chirag Solanki" }]
+keywords = [
+  "llm", "cost", "spend", "observability", "token-usage", "self-hosted",
+  "openai", "anthropic", "budget", "finops", "india",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Monitoring",
+]
+# Zero third-party dependencies. sqlite3 is in the standard library, so
+# "self-hosted" here means one file on your own disk — no server to run.
+dependencies = []
+
+[project.optional-dependencies]
+web = ["flask>=2.0"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+kharcha = "kharcha.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/chirag120670598-dotcom/kharcha"
+Issues = "https://github.com/chirag120670598-dotcom/kharcha/issues"
+
+[tool.setuptools.packages.find]
+include = ["kharcha*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
