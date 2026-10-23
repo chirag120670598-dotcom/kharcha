@@ -910,3 +910,39 @@ class TestCLI:
         code, out = self.run(["report", "--inr-rate", "83.5"], db)
         assert code == 0
         assert "\u20b9" in out
+
+
+class TestWindowsConsoleEncoding:
+    """Windows consoles default to cp1252, which cannot encode \u20b9 or \u2192.
+
+    This crashed the CLI smoke test on windows-latest in CI, and would crash
+    for any Windows user running the same command.
+    """
+
+    def test_force_utf8_stdio_does_not_raise(self):
+        """pytest's capture objects lack reconfigure(); the guard must cope."""
+        from kharcha.cli import _force_utf8_stdio
+        _force_utf8_stdio()
+
+    def test_guard_fixes_a_cp1252_stream(self):
+        import io
+        import sys
+        from kharcha.cli import _force_utf8_stdio
+
+        # the failure mode is real: cp1252 cannot encode a rupee sign
+        broken = io.TextIOWrapper(open(2, "wb", closefd=False),
+                                  encoding="cp1252", newline="")
+        with pytest.raises(UnicodeEncodeError):
+            broken.write("\u20b9")
+            broken.flush()
+
+        guarded = io.TextIOWrapper(open(2, "wb", closefd=False),
+                                   encoding="cp1252", newline="")
+        original = sys.stdout
+        sys.stdout = guarded
+        try:
+            _force_utf8_stdio()
+            sys.stdout.write("TOTAL \u20b96165.00 \u2192 paid")
+            sys.stdout.flush()
+        finally:
+            sys.stdout = original

@@ -291,7 +291,25 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _force_utf8_stdio() -> None:
+    """Force UTF-8 on stdout/stderr.
+
+    Windows consoles default to a legacy code page (cp1252 or cp850) that
+    cannot encode the rupee sign, so a CLI that prints Indian currency
+    crashes with ``UnicodeEncodeError`` before it prints anything useful.
+    Reconfiguring is the fix; the guards are for streams that are already
+    UTF-8 or that do not support reconfiguration (pytest's capture objects,
+    pipes closed early).
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    _force_utf8_stdio()
     args = build_parser().parse_args(argv)
     try:
         return args.func(args, sys.stdout)
